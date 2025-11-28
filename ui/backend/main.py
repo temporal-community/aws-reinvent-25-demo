@@ -3,16 +3,14 @@ FastAPI Backend for Temporal Research UI
 =========================================
 Production-ready backend connecting to Temporal workflows.
 
-Environment Variables Required:
-- TEMPORAL_ENDPOINT: Temporal server address (default: localhost:7233)
+Environment Variables:
+- TEMPORAL_PROFILE: name of the env config profile to use (optional).
+- TEMPORAL_ADDRESS: Temporal server address (default: 127.0.0.1:7233)
 - TEMPORAL_NAMESPACE: Temporal namespace (default: default)
+- TEMPORAL_API_KEY: API key for Temporal Cloud (disabled by default)
 - TEMPORAL_TASK_QUEUE: Task queue name (default: research-queue)
-- TEMPORAL_API_KEY: API key for Temporal Cloud (optional)
-- CONNECT_CLOUD: Set to 'Y' for Temporal Cloud connection
 """
 
-import asyncio
-import json
 import os
 import uuid
 from pathlib import Path
@@ -25,18 +23,25 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from temporalio.client import Client
+from temporalio.contrib.pydantic import pydantic_data_converter
+from temporalio.envconfig import ClientConfig
+
+from openai_agents.workflows.interactive_research_workflow import (
+    InteractiveResearchResult,
+    InteractiveResearchWorkflow,
+)
+from openai_agents.workflows.research_agents.research_models import (
+    SingleClarificationInput,
+    UserQueryInput,
+)
+
+
 # Load environment variables
 load_dotenv()
 
-# ============================================
-# Configuration
-# ============================================
-load_dotenv(dotenv_path=".env", override=True)
-TEMPORAL_ENDPOINT = os.getenv("TEMPORAL_ENDPOINT")
-TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE", "default")
 TEMPORAL_TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "research-queue")
-TEMPORAL_API_KEY = os.getenv("TEMPORAL_API_KEY")
-CONNECT_CLOUD = os.getenv("CONNECT_CLOUD", "N")
+
 
 # ============================================
 # FastAPI App Setup
@@ -59,21 +64,13 @@ app.add_middleware(
 # ============================================
 # Temporal Client Setup
 # ============================================
-# TODO: Uncomment and configure when ready to connect to Temporal
-#
-from temporalio.client import Client
-from temporalio.contrib.pydantic import pydantic_data_converter
 
-from openai_agents.workflows.interactive_research_workflow import (
-    InteractiveResearchResult,
-    InteractiveResearchWorkflow,
-)
-from openai_agents.workflows.research_agents.research_models import (
-    SingleClarificationInput,
-    UserQueryInput,
-)
 
 temporal_client: Optional[Client] = None
+
+temporal_config = ClientConfig.load_client_connect_config()
+temporal_config.setdefault('target_host', 'localhost:7233')
+temporal_config.setdefault('namespace', 'default')
 
 
 async def get_temporal_client() -> Client:
@@ -81,19 +78,12 @@ async def get_temporal_client() -> Client:
     if temporal_client:
         return temporal_client
 
-    if CONNECT_CLOUD == "Y":
-        temporal_client = await Client.connect(
-            TEMPORAL_ENDPOINT,
-            namespace=TEMPORAL_NAMESPACE,
-            api_key=TEMPORAL_API_KEY,
-            tls=True,
-            data_converter=pydantic_data_converter,
-        )
-    else:
-        temporal_client = await Client.connect(
-            "localhost:7233",
-            data_converter=pydantic_data_converter,
-        )
+    print(f"Connecting to Temporal at {temporal_config.get('target_host')} in namespace {temporal_config.get('namespace')}")
+
+    temporal_client = await Client.connect(
+        **temporal_config,
+        data_converter=pydantic_data_converter,
+    )
     return temporal_client
 
 
@@ -339,10 +329,10 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "temporal_endpoint": TEMPORAL_ENDPOINT,
-        "temporal_namespace": TEMPORAL_NAMESPACE,
+        # "temporal_profile": TEMPORAL_PROFILE,
+        "temporal_address": temporal_config.get("target_host"),
+        "temporal_namespace": temporal_config.get("namespace"),
         "task_queue": TEMPORAL_TASK_QUEUE,
-        "cloud_connection": CONNECT_CLOUD == "Y",
     }
 
 

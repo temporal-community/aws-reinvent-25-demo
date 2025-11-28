@@ -24,14 +24,17 @@ temporal server start-dev
 
 ### Connect to Temporal Cloud
 
-```bash
-# Update Temporal Connection info in .env File (copy .env-sample to .env)
-TEMPORAL_API_KEY=''
-TEMPORAL_NAMESPACE=''
-TEMPORAL_ENDPOINT=''
-CONNECT_CLOUD='N'
-TEMPORAL_TASK_QUEUE='research-queue'
-```
+To connect to a Temporal Cloud namespace, you may either:
+
+* Define an Environment Configuration Profile, and set the `TEMPORAL_PROFILE`
+  environment variable to the name of the profile to use for this application.
+  See https://docs.temporal.io/develop/environment-configuration for details.
+
+* Specify connection details through the `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`
+   and `TEMPORAL_API_KEY` environment variables.
+
+For ease of use, all environemnt variables may be defined through the `.env` file,
+at the root of the repository. See the .env-sample file for details.
 
 ## Setup
 

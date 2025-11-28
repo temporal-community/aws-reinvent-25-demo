@@ -42,9 +42,9 @@ from openai_agents.workflows.research_agents.research_models import (
 # ---------------------------------------------------------------------------
 # Environment + configuration
 # ---------------------------------------------------------------------------
-load_dotenv(dotenv_path=".env", override=True)
+load_dotenv()
 
-TEMPORAL_ENDPOINT = os.getenv("TEMPORAL_ENDPOINT")
+TEMPORAL_ADDRESS = os.getenv("TEMPORAL_ADDRESS")
 TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE", "default")
 TEMPORAL_API_KEY = os.getenv("TEMPORAL_API_KEY")
 TEMPORAL_TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "research-queue")

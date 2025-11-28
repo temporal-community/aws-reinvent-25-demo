@@ -15,26 +15,32 @@ pip install -r requirements.txt
 
 ### 2. Configure Environment
 
-Create a `.env` file in the backend directory:
+**Connect to cloud**
+Setup your cloud configuration profile in `temporal.toml` under the `profile.cloud` TOML header:
 
-```bash
-# For local Temporal server
-TEMPORAL_ENDPOINT=localhost:7233
-TEMPORAL_NAMESPACE=default
-TEMPORAL_TASK_QUEUE=research-queue
+```toml
+[profile.cloud]
+address = "your-namespace.tmprl.cloud:7233"
+namespace = "your-namespace"
+api_key = "your-api-key" 
 
-# For Temporal Cloud
-# CONNECT_CLOUD=Y
-# TEMPORAL_ENDPOINT=your-namespace.tmprl.cloud:7233
-# TEMPORAL_API_KEY=your-api-key
+[profile.cloud.tls]
+# TLS is auto-enabled when api_key is present
 ```
+
+Set the `TEMPORAL_PROFILE` environment variable to `cloud`.
+
+Read more about our environment configuration [in our docs!](https://docs.temporal.io/develop/environment-configuration)
+
+**Run locally**
+No need to change your environment!
 
 ### 3. Enable Temporal Integration
 
 Open `backend/main.py` and:
 
-1. **Uncomment the imports** (lines 55-65)
-2. **Uncomment `get_temporal_client()`** (lines 67-82)
+1. **Uncomment the imports** (lines 58-82)
+2. **Uncomment `get_temporal_client()`** (lines 85-94)
 3. **Uncomment the implementation** in each endpoint (the TODO blocks)
 4. **Remove the `raise HTTPException`** lines
 
@@ -42,6 +48,12 @@ Open `backend/main.py` and:
 
 ```bash
 python main.py
+```
+
+or
+
+```bash
+uv run backend/main.py
 ```
 
 Server runs at: `http://localhost:8233`
@@ -163,7 +175,7 @@ const API_BASE_URL = 'http://localhost:8233';
 - [ ] Implement GET /api/status/{workflow_id}
 - [ ] Implement POST /api/answer/{workflow_id}
 - [ ] Implement GET /api/result/{workflow_id}
-- [ ] Configure .env with Temporal connection
+- [ ] Configure temporal.toml with Temporal connection
 - [ ] Start Temporal server or connect to Cloud
 - [ ] Start worker (uv run openai_agents/run_worker.py)
 - [ ] Test full flow
@@ -200,7 +212,7 @@ allow_origins=["https://your-domain.com"]
 
 ### Connection Refused
 - Check Temporal server is running
-- Verify TEMPORAL_ENDPOINT in .env
+- Verify address in temporal.toml for your profile
 - Check port 7233 is accessible
 
 ### Workflow Not Found

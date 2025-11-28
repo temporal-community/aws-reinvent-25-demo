@@ -1,14 +1,12 @@
-import os
 import argparse
 import asyncio
 from pathlib import Path
 from typing import Dict, List
 
 from temporalio.client import Client
+from temporalio.envconfig import ClientConfig
 from temporalio.contrib.pydantic import pydantic_data_converter
 from dotenv import load_dotenv
-
-load_dotenv(dotenv_path='./.env',override=True)
 
 from openai_agents.workflows.interactive_research_workflow import (
     InteractiveResearchWorkflow,
@@ -18,6 +16,10 @@ from openai_agents.workflows.research_agents.research_models import (
     SingleClarificationInput,
     UserQueryInput,
 )
+
+
+# Load environment variables
+load_dotenv()
 
 
 async def run_interactive_research_with_clarifications(
@@ -297,20 +299,22 @@ async def main():
 
     args = parser.parse_args()
 
+    config = ClientConfig.load_client_connect_config()
+    config.setdefault('target_host', 'localhost:7233')
+    config.setdefault('namespace', 'default')
+
+    print(f"Connecting to Temporal at {config['target_host']} in namespace {config['namespace']}")
+
     # Create client
     try:
         client = await Client.connect(
-
-        os.getenv('TEMPORAL_ENDPOINT'),
-        namespace= os.getenv('TEMPORAL_NAMESPACE'),
-        api_key=os.getenv('TEMPORAL_API_KEY'),
-        tls=True,
-        data_converter=pydantic_data_converter,
+            **config,
+            data_converter=pydantic_data_converter,
         )
         print(f"🔗 Connected to Temporal server")
     except Exception as e:
         print(f"❌ Failed to connect to Temporal server: {e}")
-        print(f"   Make sure Temporal server is running on localhost:7233")
+        print(f"   Make sure Temporal server is running on {config.get('target_host')}")
         return
 
     # Handle different modes

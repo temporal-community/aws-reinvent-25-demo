@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from temporalio import workflow
 from dotenv import load_dotenv
-from agents import set_default_openai_key
-import os
 
-load_dotenv(dotenv_path='../../.env',override=True)
 
-set_default_openai_key(os.getenv('OPENAI_API_KEY'))
+# Load environment variables
+load_dotenv()
+
 
 with workflow.unsafe.imports_passed_through():
     from agents import Agent

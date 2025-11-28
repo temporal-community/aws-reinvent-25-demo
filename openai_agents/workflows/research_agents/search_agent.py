@@ -1,11 +1,11 @@
-from agents import set_default_openai_key, Agent, WebSearchTool
+from agents import Agent, WebSearchTool
 from agents.model_settings import ModelSettings
 from dotenv import load_dotenv
-import os
 
-load_dotenv(dotenv_path='../../.env',override=True)
 
-set_default_openai_key(os.getenv('OPENAI_API_KEY'))
+# Load environment variables
+load_dotenv()
+
 
 INSTRUCTIONS = (
     "You are a research assistant. Given a search term, you search the web for that term and "
