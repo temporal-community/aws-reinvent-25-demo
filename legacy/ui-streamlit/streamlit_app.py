@@ -28,6 +28,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(REPO_ROOT))
 
+from streamlit_utils import FileManager, run_async
+
 from openai_agents.workflows.interactive_research_workflow import (
     InteractiveResearchResult,
     InteractiveResearchWorkflow,
@@ -36,7 +38,6 @@ from openai_agents.workflows.research_agents.research_models import (
     SingleClarificationInput,
     UserQueryInput,
 )
-from streamlit_utils import FileManager, run_async
 
 # ---------------------------------------------------------------------------
 # Environment + configuration
@@ -49,9 +50,7 @@ TEMPORAL_API_KEY = os.getenv("TEMPORAL_API_KEY")
 TEMPORAL_TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "research-queue")
 TEMPORAL_CONNECT_CLOUD = os.getenv("CONNECT_CLOUD", "N")
 TEMPORAL_TLS = os.getenv("TEMPORAL_TLS", "true").lower() in {"1", "true", "yes"}
-DEFAULT_WORKFLOW_PREFIX = os.getenv(
-    "STREAMLIT_WORKFLOW_PREFIX", "interactive-research"
-)
+DEFAULT_WORKFLOW_PREFIX = os.getenv("STREAMLIT_WORKFLOW_PREFIX", "interactive-research")
 
 file_manager = FileManager(output_dir="./ui/reports")
 
@@ -125,12 +124,12 @@ async def get_temporal_client() -> Client:
     if st.session_state.temporal_client:
         return st.session_state.temporal_client
 
-    if not TEMPORAL_ENDPOINT and TEMPORAL_CONNECT_CLOUD == 'Y':
+    if not TEMPORAL_ENDPOINT and TEMPORAL_CONNECT_CLOUD == "Y":
         raise RuntimeError(
             "TEMPORAL_ENDPOINT is missing. Set it in .env or the environment."
         )
 
-    if TEMPORAL_CONNECT_CLOUD == 'Y':
+    if TEMPORAL_CONNECT_CLOUD == "Y":
         client = await Client.connect(
             TEMPORAL_ENDPOINT,
             namespace=TEMPORAL_NAMESPACE,
@@ -282,29 +281,34 @@ def get_absolute_image_path(image_path: str | None) -> str | None:
 def embed_image_in_markdown(report: str, image_path: str | None) -> str:
     """Embed image in markdown report as base64 (works in st.markdown and downloads)."""
     import base64
-    
+
     abs_path = get_absolute_image_path(image_path)
     if not abs_path or not Path(abs_path).exists():
         return report
-    
+
     try:
         with open(abs_path, "rb") as img_file:
             b64 = base64.b64encode(img_file.read()).decode()
             ext = Path(abs_path).suffix.lower()
-            mime = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}.get(ext, "image/png")
+            mime = {
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".webp": "image/webp",
+            }.get(ext, "image/png")
             image_uri = f"data:{mime};base64,{b64}"
     except Exception:
         return report
-    
-    lines = report.split('\n')
+
+    lines = report.split("\n")
     image_md = f"\n![Research Visualization]({image_uri})\n"
-    
+
     # Find first heading and insert image after it
     for i, line in enumerate(lines):
-        if line.startswith('# '):
+        if line.startswith("# "):
             lines.insert(i + 1, image_md)
-            return '\n'.join(lines)
-    
+            return "\n".join(lines)
+
     # No heading found, prepend image
     return image_md + report
 
@@ -312,6 +316,7 @@ def embed_image_in_markdown(report: str, image_path: str | None) -> str:
 # ---------------------------------------------------------------------------
 # UI helpers
 # ---------------------------------------------------------------------------
+
 
 def status_badge(label: str) -> str:
     emoji_map = {
@@ -359,7 +364,9 @@ def render_query_form() -> None:
             else None
         )
 
-        submitted = st.form_submit_button("Run interactive research", use_container_width=True)
+        submitted = st.form_submit_button(
+            "Run interactive research", use_container_width=True
+        )
 
     if submitted:
         if session_mode == "Start new session":
@@ -403,9 +410,7 @@ def render_status_panel() -> None:
         if questions:
             for idx, question in enumerate(questions):
                 answer = status.clarification_responses.get(f"question_{idx}", "—")
-                st.markdown(
-                    f"**Q{idx + 1}:** {question}\n\n> **Answer:** {answer}"
-                )
+                st.markdown(f"**Q{idx + 1}:** {question}\n\n> **Answer:** {answer}")
         else:
             st.caption("No clarifications required so far.")
 
@@ -478,7 +483,7 @@ def render_result_section() -> None:
         return
 
     st.subheader("📑 Research deliverables")
-    
+
     # Display generated image if available
     abs_image_path = get_absolute_image_path(result.image_file_path)
     if abs_image_path and Path(abs_image_path).exists():
@@ -488,7 +493,7 @@ def render_result_section() -> None:
                 abs_image_path,
                 caption="AI-Generated Research Visualization",
             )
-    
+
     with st.container():
         st.markdown(
             f"""
@@ -501,7 +506,9 @@ def render_result_section() -> None:
         )
 
     # Embed image in markdown for display/download
-    markdown_with_image = embed_image_in_markdown(result.markdown_report, result.image_file_path)
+    markdown_with_image = embed_image_in_markdown(
+        result.markdown_report, result.image_file_path
+    )
 
     download_cols = st.columns(3)
     download_cols[0].download_button(
@@ -550,9 +557,7 @@ def render_history_panel() -> None:
         return
     st.sidebar.subheader("Recent sessions")
     for entry in reversed(history):
-        st.sidebar.markdown(
-            f"- `{entry['workflow_id']}` · {entry.get('query') or '—'}"
-        )
+        st.sidebar.markdown(f"- `{entry['workflow_id']}` · {entry.get('query') or '—'}")
 
 
 # ---------------------------------------------------------------------------

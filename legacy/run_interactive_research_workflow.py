@@ -300,7 +300,7 @@ async def main():
     # Create client
     try:
         client = await Client.connect(
-            
+
         os.getenv('TEMPORAL_ENDPOINT'),
         namespace= os.getenv('TEMPORAL_NAMESPACE'),
         api_key=os.getenv('TEMPORAL_API_KEY'),
