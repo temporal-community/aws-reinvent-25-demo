@@ -1,0 +1,386 @@
+from __future__ import annotations
+
+#import sys
+from pathlib import Path
+
+#REPO_ROOT = Path(__file__).resolve().parents[1]
+#if str(REPO_ROOT) not in sys.path:
+ #   sys.path.insert(0, str(REPO_ROOT))
+    
+import asyncio
+from dataclasses import dataclass
+from typing import Dict, List, Optional
+
+from temporalio import workflow
+from dotenv import load_dotenv
+from agents import set_default_openai_key
+import os
+
+load_dotenv(dotenv_path='../../.env',override=True)
+
+set_default_openai_key(os.getenv('OPENAI_API_KEY'))
+
+with workflow.unsafe.imports_passed_through():
+    # TODO: Restore progress updates
+    from agents import (
+        RunConfig,
+        Runner,
+        TResponseInputItem,
+        custom_span,
+        gen_trace_id,
+        trace,
+    )
+
+    from openai_agents.workflows.research_agents.clarifying_agent import Clarifications
+    from openai_agents.workflows.research_agents.imagegen_agent import (
+        ImageGenData,
+        new_imagegen_agent,
+    )
+    from openai_agents.workflows.research_agents.pdf_generator_agent import (
+        new_pdf_generator_agent,
+    )
+
+    # from openai_agents.workflows.research_agents.instruction_agent import (
+    #     new_instruction_agent,
+    # )
+    from openai_agents.workflows.research_agents.planner_agent import (
+        WebSearchItem,
+        WebSearchPlan,
+        new_planner_agent,
+    )
+    from openai_agents.workflows.research_agents.search_agent import new_search_agent
+    from openai_agents.workflows.research_agents.triage_agent import new_triage_agent
+    from openai_agents.workflows.research_agents.writer_agent import (
+        ReportData,
+        new_writer_agent,
+    )
+
+
+@dataclass
+class ClarificationResult:
+    """Result from initial clarification check"""
+
+    needs_clarifications: bool
+    questions: Optional[List[str]] = None
+    research_output: Optional[str] = None
+    report_data: Optional[ReportData] = None
+
+
+class InteractiveResearchManager:
+    def __init__(self):
+        self.run_config = RunConfig()
+        self.search_agent = new_search_agent()
+        self.planner_agent = new_planner_agent()
+        self.writer_agent = new_writer_agent()
+        self.triage_agent = new_triage_agent()
+        self.pdf_generator_agent = new_pdf_generator_agent()
+        self.imagegen_agent = new_imagegen_agent()
+
+        # Image state (stored during generation for PDF embedding)
+        self.research_image_path: str | None = None
+        self.research_image_description: str | None = None
+
+    async def run(self, query: str, use_clarifications: bool = False) -> str:
+        """
+        Run research with optional clarifying questions flow
+
+        Args:
+            query: The research query
+            use_clarifications: If True, uses multi-agent flow with clarifying questions
+        """
+        if use_clarifications:
+            # This method is for backwards compatibility, just use direct flow
+            report = await self._run_direct(query)
+            return report.markdown_report
+        else:
+            report = await self._run_direct(query)
+            return report.markdown_report
+
+    async def _run_direct(self, query: str) -> ReportData:
+        """Original direct research flow with parallel image generation"""
+        trace_id = gen_trace_id()
+        with trace("Research trace", trace_id=trace_id):
+            # Start image generation immediately to run in parallel with entire research pipeline
+            workflow.logger.info(
+                "Starting image generation in parallel with research pipeline"
+            )
+            image_task = asyncio.create_task(self._generate_research_image(query))
+
+            # Perform research pipeline (planning, searching, writing)
+            search_plan = await self._plan_searches(query)
+            search_results = await self._perform_searches(search_plan)
+            report = await self._write_report(query, search_results)
+
+            # Wait for image generation to complete (if not already done)
+            workflow.logger.info("Waiting for image generation to complete")
+            image_path, image_description = await image_task
+
+            # Store image data for PDF generation
+            self.research_image_path = image_path
+            self.research_image_description = image_description
+
+        return report
+
+    async def run_with_clarifications_start(self, query: str) -> ClarificationResult:
+        """Start clarification flow and return whether clarifications are needed"""
+        trace_id = gen_trace_id()
+        with trace("Clarification check", trace_id=trace_id):
+            # Start with triage agent to determine if clarifications are needed
+            input_items: list[TResponseInputItem] = [{"content": query, "role": "user"}]
+            result = await Runner.run(
+                self.triage_agent,
+                input_items,
+                run_config=self.run_config,
+            )
+
+            # Check if clarifications were generated
+            clarifications = self._extract_clarifications(result)
+            if clarifications and isinstance(clarifications, Clarifications):
+                return ClarificationResult(
+                    needs_clarifications=True, questions=clarifications.questions
+                )
+            else:
+                # No clarifications needed, continue with research
+                # Start image generation immediately to run in parallel with entire research pipeline
+                workflow.logger.info(
+                    "Starting image generation in parallel with research pipeline"
+                )
+                image_task = asyncio.create_task(self._generate_research_image(query))
+
+                # Perform research pipeline (planning, searching, writing)
+                search_plan = await self._plan_searches(query)
+                search_results = await self._perform_searches(search_plan)
+                report = await self._write_report(query, search_results)
+
+                # Wait for image generation to complete (if not already done)
+                workflow.logger.info("Waiting for image generation to complete")
+                image_path, image_description = await image_task
+
+                # Store image data for PDF generation
+                self.research_image_path = image_path
+                self.research_image_description = image_description
+
+                return ClarificationResult(
+                    needs_clarifications=False,
+                    research_output=report.markdown_report,
+                    report_data=report,
+                )
+
+    async def run_with_clarifications_complete(
+        self, original_query: str, questions: List[str], responses: Dict[str, str]
+    ) -> ReportData:
+        """Complete research using clarification responses"""
+        trace_id = gen_trace_id()
+        with trace("Enhanced Research with clarifications", trace_id=trace_id):
+            # Enrich the query with clarification responses
+            enriched_query = self._enrich_query(original_query, questions, responses)
+
+            # Start image generation immediately to run in parallel with entire research pipeline
+            workflow.logger.info(
+                "Starting image generation in parallel with research pipeline"
+            )
+            image_task = asyncio.create_task(
+                self._generate_research_image(enriched_query)
+            )
+
+            # Perform research pipeline (planning, searching, writing)
+            search_plan = await self._plan_searches(enriched_query)
+            search_results = await self._perform_searches(search_plan)
+            report = await self._write_report(enriched_query, search_results)
+
+            # Wait for image generation to complete (if not already done)
+            workflow.logger.info("Waiting for image generation to complete")
+            image_path, image_description = await image_task
+
+            # Store image data for PDF generation
+            self.research_image_path = image_path
+            self.research_image_description = image_description
+
+            return report
+
+    def _extract_clarifications(self, result) -> Optional[Clarifications]:
+        """Extract clarifications from agent result if present"""
+        try:
+            # Check if the final output is Clarifications
+            if hasattr(result, "final_output") and isinstance(
+                result.final_output, Clarifications
+            ):
+                return result.final_output
+
+            # Look through result items for clarifications
+            for item in result.new_items:
+                if hasattr(item, "raw_item") and hasattr(item.raw_item, "content"):
+                    content = item.raw_item.content
+                    if isinstance(content, Clarifications):
+                        return content
+                # Also check if the item itself has output_type content
+                if hasattr(item, "output") and isinstance(item.output, Clarifications):
+                    return item.output
+
+            # Try result.final_output_as() method if available
+            try:
+                clarifications = result.final_output_as(Clarifications)
+                if clarifications:
+                    return clarifications
+            except Exception:
+                pass
+
+            return None
+        except Exception as e:
+            workflow.logger.info(f"Error extracting clarifications: {e}")
+            return None
+
+    def _enrich_query(
+        self, original_query: str, questions: List[str], responses: Dict[str, str]
+    ) -> str:
+        """Combine original query with clarification responses"""
+        enriched = f"Original query: {original_query}\n\nAdditional context from clarifications:\n"
+        for i, question in enumerate(questions):
+            answer = responses.get(f"question_{i}", "No specific preference")
+            enriched += f"- {question}: {answer}\n"
+        return enriched
+
+    async def _plan_searches(self, query: str) -> WebSearchPlan:
+        input_str: str = f"Query: {query}"
+        result = await Runner.run(
+            self.planner_agent,
+            input_str,
+            run_config=self.run_config,
+        )
+        return result.final_output_as(WebSearchPlan)
+
+    async def _perform_searches(self, search_plan: WebSearchPlan) -> list[str]:
+        with custom_span("Search the web"):
+            num_completed = 0
+            tasks = [
+                asyncio.create_task(self._search(item)) for item in search_plan.searches
+            ]
+            results = []
+            for task in workflow.as_completed(tasks):
+                result = await task
+                if result is not None:
+                    results.append(result)
+                num_completed += 1
+            return results
+
+    async def _search(self, item: WebSearchItem) -> str | None:
+        input_str: str = (
+            f"Search term: {item.query}\nReason for searching: {item.reason}"
+        )
+        try:
+            result = await Runner.run(
+                self.search_agent,
+                input_str,
+                run_config=self.run_config,
+            )
+            return str(result.final_output)
+        except Exception:
+            return None
+
+    async def _write_report(self, query: str, search_results: list[str]) -> ReportData:
+        input_str: str = (
+            f"Original query: {query}\nSummarized search results: {search_results}"
+        )
+
+        # Generate markdown report
+        markdown_result = await Runner.run(
+            self.writer_agent,
+            input_str,
+            run_config=self.run_config,
+        )
+
+        report_data = markdown_result.final_output_as(ReportData)
+        return report_data
+
+    async def _generate_research_image(
+        self, query: str
+    ) -> tuple[str | None, str | None]:
+        """
+        Generate an image for the research topic using ImageGenAgent.
+
+        The agent will:
+        1. Create a compelling 2-sentence description
+        2. Call the generate_image tool to create and save the image
+        3. Return the file path and description
+
+        Args:
+            query: The enriched research query
+
+        Returns:
+            Tuple of (image_file_path, description) or (None, None) if failed
+        """
+        with custom_span("Generate research image"):
+            try:
+                workflow.logger.info("Generating image with ImageGenAgent...")
+
+                result = await Runner.run(
+                    self.imagegen_agent,
+                    f"Create and generate an image for this research topic: {query}",
+                    run_config=self.run_config,
+                )
+
+                image_output = result.final_output_as(ImageGenData)
+
+                if not image_output.success or not image_output.image_file_path:
+                    # Check if it's a non-retryable error
+                    non_retryable_indicators = [
+                        "organization must be verified",
+                        "Your organization must be verified",
+                        "403",
+                        "invalid_request_error",
+                        "insufficient_quota",
+                        "invalid_api_key",
+                        "PydanticSerializationError",
+                        "invalid utf-8 sequence",
+                        "serialization",
+                    ]
+
+                    error_msg = image_output.error_message or ""
+                    is_non_retryable = any(
+                        indicator.lower() in error_msg.lower()
+                        for indicator in non_retryable_indicators
+                    )
+
+                    if is_non_retryable:
+                        workflow.logger.warning(
+                            f"Non-retryable image generation error: {error_msg}. "
+                            "Continuing without image."
+                        )
+                    else:
+                        workflow.logger.warning(f"Image generation failed: {error_msg}")
+
+                    return (None, None)
+
+                workflow.logger.info(
+                    f"Image generated successfully: {image_output.image_file_path}"
+                )
+
+                return (
+                    image_output.image_file_path,
+                    image_output.image_description,
+                )
+
+            except Exception as e:
+                # Catch any exceptions that bubble up (e.g., ApplicationError with non_retryable=True)
+                error_str = str(e)
+                workflow.logger.warning(
+                    f"Image generation activity failed: {error_str}. Continuing without image."
+                )
+                return (None, None)
+
+    async def _generate_pdf_report(self, report_data: ReportData) -> str | None:
+        """Generate PDF from markdown report, return file path"""
+        try:
+            pdf_result = await Runner.run(
+                self.pdf_generator_agent,
+                f"Convert this markdown report to PDF:\n\n{report_data.markdown_report}",
+                run_config=self.run_config,
+            )
+
+            pdf_output = pdf_result.final_output_as(type(pdf_result.final_output))
+            if pdf_output.success:
+                return pdf_output.pdf_file_path
+        except Exception:
+            # If PDF generation fails, return None
+            pass
+        return None

@@ -1,0 +1,68 @@
+# Streamlit Configuration for Deep Research Agent
+# Place this file in .streamlit/config.toml
+
+[theme]
+base = "dark"
+primaryColor = "#81A1FF"
+backgroundColor = "#0B0F19"
+secondaryBackgroundColor = "#141C2F"
+textColor = "#E6E9F4"
+font = "sans serif"
+
+[server]
+# Server settings
+port = 8501
+address = "localhost"
+baseUrlPath = ""
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+maxMessageSize = 200
+enableWebsocketCompression = false
+enableStaticServing = true
+
+# File watching
+fileWatcherType = "auto"
+folderWatchBlacklist = []
+
+# Browser
+headless = false
+runOnSave = true
+
+[browser]
+# Browser settings
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501
+
+[runner]
+magicEnabled = true
+postScriptGC = true
+fastReruns = true
+
+[client]
+caching = true
+displayEnabled = true
+showErrorDetails = true
+toolbarMode = "minimal"
+showSidebarNavigation = true
+hideTopBar = false
+
+[logger]
+# Logging configuration
+level = "info"
+messageFormat = "%(asctime)s %(message)s"
+
+[deprecation]
+# Deprecation warnings
+showfileUploaderEncoding = false
+showImageFormat = false
+showPyplotGlobalUse = false
+
+[credentials]
+# Credentials (if needed for deployment)
+# email = ""
+
+[mapbox]
+# Mapbox token (if using maps)
+# token = ""
