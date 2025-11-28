@@ -105,10 +105,10 @@ In another terminal:
 source .venv/bin/activate
 ```
 
-\*\*To run the (incomplete) "new" UI:
+\*\*To run the UI:
 
 ```bash
-python new-ui/backend/main.py
+python ui/backend/main.py
 ```
 
 This will launch the Interactive Research App on http://localhost:8501
