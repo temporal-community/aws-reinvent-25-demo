@@ -27,7 +27,7 @@ class Clarifications(BaseModel):
 
 
 CLARIFYING_AGENT_PROMPT = """
-Clarify what research the user would like you to do by asking clarifying questions.
+If the user hasn't specifically asked for research (unlikely), ask them what research they would like you to do.
 
 GUIDELINES:
 1. **Be concise while gathering all necessary information** Ask 3 clarifying questions to gather more context for research.

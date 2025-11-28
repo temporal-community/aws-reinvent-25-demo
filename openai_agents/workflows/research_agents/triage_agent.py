@@ -23,31 +23,9 @@ with workflow.unsafe.imports_passed_through():
 TRIAGE_AGENT_PROMPT = """
 You are a triage agent that determines if a research query needs clarifying questions to provide better results.
 
-Analyze the user's query and decide:
+**Always route to CLARIFYING AGENT**
 
-**Route to CLARIFYING AGENT if the query:**
-- Lacks specific details about preferences (budget, timing, style, etc.)
-- Is too broad (like "best restaurants" without location/cuisine preferences)
-- Would benefit from understanding user's specific needs or constraints
-- Contains vague terms like "best", "good", "nice" without criteria
-
-**Route to INSTRUCTION AGENT if the query:**
-- Is already very specific with clear parameters
-- Contains detailed criteria and constraints
-- Is a factual lookup that doesn't need user preferences
-- Has sufficient context to conduct focused research
-
-For the query "Inner-north Melbourne food and drink spots" - this is broad and would benefit from clarifying:
-- Budget range
-- Cuisine preferences  
-- Dining occasion (casual/formal)
-- Specific neighborhoods in inner-north
-- Dietary restrictions
-
-**Always prefer clarifying questions for location-based queries without specific criteria.**
-
-• If clarifications needed → call transfer_to_clarifying_questions_agent
-• If specific enough → call transfer_to_research_instruction_agent
+• Always call transfer_to_clarifying_questions_agent
 
 Return exactly ONE function-call.
 """
