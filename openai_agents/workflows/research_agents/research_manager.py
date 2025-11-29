@@ -4,9 +4,8 @@ import asyncio
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from temporalio import workflow
 from dotenv import load_dotenv
-
+from temporalio import workflow
 
 # Load environment variables
 load_dotenv()

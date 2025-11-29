@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import List
 
-from pydantic import BaseModel
-from temporalio import workflow
 from agents import set_default_openai_key
 from dotenv import load_dotenv
-
+from pydantic import BaseModel
+from temporalio import workflow
 
 # Load environment variables
 load_dotenv()

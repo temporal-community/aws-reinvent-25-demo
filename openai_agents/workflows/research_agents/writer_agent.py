@@ -1,8 +1,7 @@
 # Agent used to synthesize a final report from the individual summaries.
 from agents import Agent
-from pydantic import BaseModel
 from dotenv import load_dotenv
-
+from pydantic import BaseModel
 
 # Load environment variables
 load_dotenv()

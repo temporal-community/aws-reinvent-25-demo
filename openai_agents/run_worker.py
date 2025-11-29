@@ -5,11 +5,9 @@ import logging
 from datetime import timedelta
 
 from dotenv import load_dotenv
-
 from temporalio.client import Client
 from temporalio.common import RetryPolicy
-from temporalio.contrib.openai_agents import OpenAIAgentsPlugin, ModelActivityParameters
-
+from temporalio.contrib.openai_agents import ModelActivityParameters, OpenAIAgentsPlugin
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.envconfig import ClientConfig
 from temporalio.worker import Worker
@@ -20,7 +18,6 @@ from openai_agents.workflows.interactive_research_workflow import (
     process_clarification,
 )
 from openai_agents.workflows.pdf_generation_activity import generate_pdf
-
 
 # Load environment variables
 load_dotenv()
@@ -34,10 +31,12 @@ async def main():
     logging.basicConfig(level=logging.INFO)
 
     config = ClientConfig.load_client_connect_config()
-    config.setdefault('target_host', 'localhost:7233')
-    config.setdefault('namespace', 'default')
+    config.setdefault("target_host", "localhost:7233")
+    config.setdefault("namespace", "default")
 
-    print(f"Connecting to Temporal at {config['target_host']} in namespace {config['namespace']}")
+    print(
+        f"Connecting to Temporal at {config.get('target_host')} in namespace {config.get('namespace')}"
+    )
 
     client = await Client.connect(
         **config,
@@ -49,7 +48,7 @@ async def main():
                     retry_policy=RetryPolicy(
                         backoff_coefficient=2.0,
                         initial_interval=timedelta(seconds=1),
-                        maximum_interval=timedelta(seconds=5)
+                        maximum_interval=timedelta(seconds=5),
                     ),
                 )
             ),
