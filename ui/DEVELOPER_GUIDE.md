@@ -15,42 +15,30 @@ pip install -r requirements.txt
 
 ### 2. Configure Environment
 
-**Connect to cloud**
-Setup your cloud configuration profile in `temporal.toml` under the `profile.cloud` TOML header:
-
-```toml
-[profile.cloud]
-address = "your-namespace.tmprl.cloud:7233"
-namespace = "your-namespace"
-api_key = "your-api-key" 
-
-[profile.cloud.tls]
-# TLS is auto-enabled when api_key is present
-```
-
-Set the `TEMPORAL_PROFILE` environment variable to `cloud`.
-
-Read more about our environment configuration [in our docs!](https://docs.temporal.io/develop/environment-configuration)
-
 **Run locally**
 No need to change your environment!
 
-### 3. Enable Temporal Integration
+**Connect to cloud**
+The easiest way is to use an [Environment Configuration Profile](https://docs.temporal.io/develop/environment-configuration).
 
-Open `backend/main.py` and:
-
-1. **Uncomment the imports** (lines 58-82)
-2. **Uncomment `get_temporal_client()`** (lines 85-94)
-3. **Uncomment the implementation** in each endpoint (the TODO blocks)
-4. **Remove the `raise HTTPException`** lines
-
-### 4. Run the Server
+1. If you haven't done so already, create a new environment configuration profile for your favorite cloud namespace,
+   using the latest Temporal CLI:
 
 ```bash
-python main.py
+temporal config set  --env "my-cloud-namespace"  --prop address  --value "us-west-2.aws.api.temporal.io:7233"
+temporal config set  --env "my-cloud-namespace"  --prop namespace  --value "my-cloud-namespace.a1234"
+temporal config set  --env "my-cloud-namespace"  --prop api_key  --value "...my-api-key..."
+````
+
+2. Copy the `.env-sample` file located at the root of this repository to `.env`.
+
+3. In the `.env` file, uncomment the `TEMPORAL_PROFILE` environment variable, and set it to the name of your cloud namespace.
+
+```bash
+TEMPORAL_PROFILE='my-cloud-namespace'
 ```
 
-or
+### 4. Run the Server
 
 ```bash
 uv run backend/main.py
@@ -169,13 +157,11 @@ const API_BASE_URL = 'http://localhost:8233';
 
 ## Integration Checklist
 
-- [ ] Uncomment Temporal imports in main.py
-- [ ] Uncomment get_temporal_client() function
 - [ ] Implement POST /api/start-research
 - [ ] Implement GET /api/status/{workflow_id}
 - [ ] Implement POST /api/answer/{workflow_id}
 - [ ] Implement GET /api/result/{workflow_id}
-- [ ] Configure temporal.toml with Temporal connection
+- [ ] Configure Environment Configuration Profile / .env file with Temporal connection details
 - [ ] Start Temporal server or connect to Cloud
 - [ ] Start worker (uv run openai_agents/run_worker.py)
 - [ ] Test full flow
