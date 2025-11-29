@@ -5,6 +5,39 @@ This repository builds on the Temporal Interactive Deep Research Demo by @stevea
 For detailed information about the research agents in this repo, see [openai_agents/workflows/research_agents/README.md](openai_agents/workflows/research_agents/README.md)
 Access original repo [here](https://github.com/steveandroulakis/openai-agents-demos)
 
+## Key Features
+
+- **Temporal Workflows**: This demo uses Temporal for reliable workflow orchestration
+- **OpenAI Agents**: Powered by the OpenAI Agents SDK for natural language processing
+- **Multi-Agent Systems**: The research demo showcases complex multi-agent coordination
+- **Interactive Workflows**: Research demo supports real-time user interaction
+- **Tool Integration**: Tools demo shows how to integrate external activities
+- **PDF Generation**: Interactive research workflow generates professional PDF reports alongside markdown
+
+## About this Demo: Multi-Agent Interactive Research Workflow
+
+An enhanced version of the research workflow with interactive clarifying questions to refine research parameters before execution and optional PDF generation.
+
+This example is designed to be similar to the OpenAI Cookbook: [Introduction to deep research in the OpenAI API](https://cookbook.openai.com/examples/deep_research_api/introduction_to_deep_research_api)
+
+**Files:**
+
+- `openai_agents/workflows/interactive_research_workflow.py` - Interactive research workflow
+- `openai_agents/workflows/research_agents/` - All research agent components
+- `openai_agents/run_interactive_research_workflow.py` - Interactive research client
+- `openai_agents/workflows/pdf_generation_activity.py` - PDF generation activity
+- `openai_agents/workflows/research_agents/pdf_generator_agent.py` - PDF generation agent
+
+**Agents:**
+
+- **Triage Agent**: Analyzes research queries and determines if clarifications are needed
+- **Clarifying Agent**: Generates follow-up questions for better research parameters
+- **Instruction Agent**: Refines research parameters based on user responses
+- **Planner Agent**: Creates web search plans
+- **Search Agent**: Performs web searches
+- **Writer Agent**: Compiles final research reports
+- **PDF Generator Agent**: Converts markdown reports to professionally formatted PDFs
+
 ## Prerequisites
 
 1. **Python 3.10+** - Required for the demos
@@ -26,12 +59,12 @@ temporal server start-dev
 
 To connect to a Temporal Cloud namespace, you may either:
 
-* Define an Environment Configuration Profile, and set the `TEMPORAL_PROFILE`
+- Define an Environment Configuration Profile, and set the `TEMPORAL_PROFILE`
   environment variable to the name of the profile to use for this application.
   See https://docs.temporal.io/develop/environment-configuration for details.
 
-* Specify connection details through the `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`
-   and `TEMPORAL_API_KEY` environment variables.
+- Specify connection details through the `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`
+  and `TEMPORAL_API_KEY` environment variables.
 
 For ease of use, all environemnt variables may be defined through the `.env` file,
 at the root of the repository. See the .env-sample file for details.
@@ -61,13 +94,9 @@ at the root of the repository. See the .env-sample file for details.
 
 ## Running the Demos
 
-### Step 1: Start the Worker
+### 1. Start the Worker
 
 In one terminal, start the worker that will handle all workflows:
-
-```bash
-source .venv/bin/activate
-```
 
 ```bash
 uv run openai_agents/run_worker.py
@@ -77,46 +106,23 @@ Keep this running throughout your demo sessions. The worker registers all availa
 You can run multiple copies of workers for faster workflow processing. Please ensure `OPENAI_API_KEY` is set before
 you attempt to start the worker.
 
-### Run the Demo: Multi-Agent Interactive Research Workflow
+### 2. Run the UI
 
-An enhanced version of the research workflow with interactive clarifying questions to refine research parameters before execution and optional PDF generation.
-
-This example is designed to be similar to the OpenAI Cookbook: [Introduction to deep research in the OpenAI API](https://cookbook.openai.com/examples/deep_research_api/introduction_to_deep_research_api)
-
-**Files:**
-
-- `openai_agents/workflows/interactive_research_workflow.py` - Interactive research workflow
-- `openai_agents/workflows/research_agents/` - All research agent components
-- `openai_agents/run_interactive_research_workflow.py` - Interactive research client
-- `openai_agents/workflows/pdf_generation_activity.py` - PDF generation activity
-- `openai_agents/workflows/research_agents/pdf_generator_agent.py` - PDF generation agent
-
-**Agents:**
-
-- **Triage Agent**: Analyzes research queries and determines if clarifications are needed
-- **Clarifying Agent**: Generates follow-up questions for better research parameters
-- **Instruction Agent**: Refines research parameters based on user responses
-- **Planner Agent**: Creates web search plans
-- **Search Agent**: Performs web searches
-- **Writer Agent**: Compiles final research reports
-- **PDF Generator Agent**: Converts markdown reports to professionally formatted PDFs
-
-**To run the demo:**
 In another terminal:
 
 ```bash
-source .venv/bin/activate
+uv run ui/backend/main.py
 ```
 
-\*\*To run the UI:
-
-```bash
-python ui/backend/main.py
-```
-
-This will launch the Interactive Research App on http://localhost:8501
+This will launch the Interactive Research App on http://0.0.0.0:8234
 
 ![UI Interface](ui/ui_img.png "UI Interface Img")
+
+### 3. Use the Demo
+
+Open your browser to http://0.0.0.0:8234 to use the demo.
+
+For best result, also open the Temporal UI in browser, side by side with the demo UI.
 
 **Output:**
 
@@ -138,15 +144,6 @@ uv run -m isort .
 uv run -m mypy --check-untyped-defs --namespace-packages .
 uv run pyright .
 ```
-
-## Key Features
-
-- **Temporal Workflows**: This demo uses Temporal for reliable workflow orchestration
-- **OpenAI Agents**: Powered by the OpenAI Agents SDK for natural language processing
-- **Multi-Agent Systems**: The research demo showcases complex multi-agent coordination
-- **Interactive Workflows**: Research demo supports real-time user interaction
-- **Tool Integration**: Tools demo shows how to integrate external activities
-- **PDF Generation**: Interactive research workflow generates professional PDF reports alongside markdown
 
 ## License
 
