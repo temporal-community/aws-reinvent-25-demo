@@ -1,22 +1,19 @@
 from __future__ import annotations
 
-import os
 import asyncio
 import logging
 from datetime import timedelta
+
 from dotenv import load_dotenv
-
-load_dotenv(dotenv_path='.env',override=True)
-
-logging.getLogger("openai").setLevel(logging.ERROR)
-logging.getLogger("openai.agents").setLevel(logging.CRITICAL)
 
 from temporalio.client import Client
 from temporalio.common import RetryPolicy
 from temporalio.contrib.openai_agents import OpenAIAgentsPlugin, ModelActivityParameters
 
 from temporalio.contrib.pydantic import pydantic_data_converter
+from temporalio.envconfig import ClientConfig
 from temporalio.worker import Worker
+
 from openai_agents.workflows.image_generation_activity import generate_image
 from openai_agents.workflows.interactive_research_workflow import (
     InteractiveResearchWorkflow,
@@ -25,39 +22,25 @@ from openai_agents.workflows.interactive_research_workflow import (
 from openai_agents.workflows.pdf_generation_activity import generate_pdf
 
 
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.getLogger("openai").setLevel(logging.ERROR)
+logging.getLogger("openai.agents").setLevel(logging.CRITICAL)
+
+
 async def main():
     logging.basicConfig(level=logging.INFO)
-    print("Starting worker...")
-    if os.getenv('CONNECT_CLOUD') == 'Y':
-        print(f"Connecting to Temporal at {os.getenv('TEMPORAL_ENDPOINT')} in namespace {os.getenv('TEMPORAL_NAMESPACE')}")
-    else:
-        print(f"Connecting to localhost:7233")
 
-    # Create client connected to server at the given address
-    if os.getenv('CONNECT_CLOUD') == 'Y':
-        client = await Client.connect(
-        os.getenv('TEMPORAL_ENDPOINT'),
-        namespace= os.getenv('TEMPORAL_NAMESPACE'),
-        api_key=os.getenv('TEMPORAL_API_KEY'),
-        tls=True,
-        plugins=[
-            OpenAIAgentsPlugin(
-                model_params=ModelActivityParameters(
-                    start_to_close_timeout=timedelta(seconds=90),
-                    schedule_to_close_timeout=timedelta(seconds=500),
-                    retry_policy=RetryPolicy(
-                        backoff_coefficient=2.0,
-                        initial_interval=timedelta(seconds=1),
-                        maximum_interval=timedelta(seconds=5),
-                    ),
-                )
-            ),
-        ],
-        data_converter=pydantic_data_converter,
-    )
-    else:
-        client = await Client.connect(
-        "localhost:7233",
+    config = ClientConfig.load_client_connect_config()
+    config.setdefault('target_host', 'localhost:7233')
+    config.setdefault('namespace', 'default')
+
+    print(f"Connecting to Temporal at {config['target_host']} in namespace {config['namespace']}")
+
+    client = await Client.connect(
+        **config,
         plugins=[
             OpenAIAgentsPlugin(
                 model_params=ModelActivityParameters(
@@ -66,14 +49,15 @@ async def main():
                     retry_policy=RetryPolicy(
                         backoff_coefficient=2.0,
                         initial_interval=timedelta(seconds=1),
-                        maximum_interval=timedelta(seconds=5),
+                        maximum_interval=timedelta(seconds=5)
                     ),
                 )
             ),
         ],
         data_converter=pydantic_data_converter,
     )
-    print("Client created, creating worker...")
+
+    print("Starting worker...")
     worker = Worker(
         client,
         task_queue="research-queue",

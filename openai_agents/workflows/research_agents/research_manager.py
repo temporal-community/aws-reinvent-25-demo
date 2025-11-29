@@ -1,24 +1,16 @@
 from __future__ import annotations
 
-#import sys
-from pathlib import Path
-
-#REPO_ROOT = Path(__file__).resolve().parents[1]
-#if str(REPO_ROOT) not in sys.path:
- #   sys.path.insert(0, str(REPO_ROOT))
-    
 import asyncio
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from temporalio import workflow
 from dotenv import load_dotenv
-from agents import set_default_openai_key
-import os
 
-load_dotenv(dotenv_path='../../.env',override=True)
 
-set_default_openai_key(os.getenv('OPENAI_API_KEY'))
+# Load environment variables
+load_dotenv()
+
 
 with workflow.unsafe.imports_passed_through():
     # TODO: Restore progress updates

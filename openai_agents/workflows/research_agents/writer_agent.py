@@ -1,12 +1,12 @@
 # Agent used to synthesize a final report from the individual summaries.
-from agents import set_default_openai_key, Agent
+from agents import Agent
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import os
 
-load_dotenv(dotenv_path='../../.env',override=True)
 
-set_default_openai_key(os.getenv('OPENAI_API_KEY'))
+# Load environment variables
+load_dotenv()
+
 
 PROMPT = (
     "You are a senior researcher tasked with writing a comprehensive, in-depth report for a research query. "

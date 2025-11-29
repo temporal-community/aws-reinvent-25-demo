@@ -15,33 +15,33 @@ pip install -r requirements.txt
 
 ### 2. Configure Environment
 
-Create a `.env` file in the backend directory:
+**Run locally**
+No need to change your environment!
+
+**Connect to cloud**
+The easiest way is to use an [Environment Configuration Profile](https://docs.temporal.io/develop/environment-configuration).
+
+1. If you haven't done so already, create a new environment configuration profile for your favorite cloud namespace,
+   using the latest Temporal CLI:
 
 ```bash
-# For local Temporal server
-TEMPORAL_ENDPOINT=localhost:7233
-TEMPORAL_NAMESPACE=default
-TEMPORAL_TASK_QUEUE=research-queue
+temporal config set  --env "my-cloud-namespace"  --prop address  --value "us-west-2.aws.api.temporal.io:7233"
+temporal config set  --env "my-cloud-namespace"  --prop namespace  --value "my-cloud-namespace.a1234"
+temporal config set  --env "my-cloud-namespace"  --prop api_key  --value "...my-api-key..."
+````
 
-# For Temporal Cloud
-# CONNECT_CLOUD=Y
-# TEMPORAL_ENDPOINT=your-namespace.tmprl.cloud:7233
-# TEMPORAL_API_KEY=your-api-key
+2. Copy the `.env-sample` file located at the root of this repository to `.env`.
+
+3. In the `.env` file, uncomment the `TEMPORAL_PROFILE` environment variable, and set it to the name of your cloud namespace.
+
+```bash
+TEMPORAL_PROFILE='my-cloud-namespace'
 ```
-
-### 3. Enable Temporal Integration
-
-Open `backend/main.py` and:
-
-1. **Uncomment the imports** (lines 55-65)
-2. **Uncomment `get_temporal_client()`** (lines 67-82)
-3. **Uncomment the implementation** in each endpoint (the TODO blocks)
-4. **Remove the `raise HTTPException`** lines
 
 ### 4. Run the Server
 
 ```bash
-python main.py
+uv run backend/main.py
 ```
 
 Server runs at: `http://localhost:8233`
@@ -157,13 +157,11 @@ const API_BASE_URL = 'http://localhost:8233';
 
 ## Integration Checklist
 
-- [ ] Uncomment Temporal imports in main.py
-- [ ] Uncomment get_temporal_client() function
 - [ ] Implement POST /api/start-research
 - [ ] Implement GET /api/status/{workflow_id}
 - [ ] Implement POST /api/answer/{workflow_id}
 - [ ] Implement GET /api/result/{workflow_id}
-- [ ] Configure .env with Temporal connection
+- [ ] Configure Environment Configuration Profile / .env file with Temporal connection details
 - [ ] Start Temporal server or connect to Cloud
 - [ ] Start worker (uv run openai_agents/run_worker.py)
 - [ ] Test full flow
@@ -200,7 +198,7 @@ allow_origins=["https://your-domain.com"]
 
 ### Connection Refused
 - Check Temporal server is running
-- Verify TEMPORAL_ENDPOINT in .env
+- Verify address in temporal.toml for your profile
 - Check port 7233 is accessible
 
 ### Workflow Not Found

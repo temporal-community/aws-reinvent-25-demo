@@ -7,11 +7,11 @@ from temporalio.contrib import openai_agents as temporal_agents
 
 from openai_agents.workflows.pdf_generation_activity import generate_pdf
 from dotenv import load_dotenv
-import os
 
-load_dotenv(dotenv_path='../../.env',override=True)
 
-set_default_openai_key(os.getenv('OPENAI_API_KEY'))
+# Load environment variables
+load_dotenv()
+
 
 PDF_GENERATION_PROMPT = (
     "You are a PDF formatting specialist tasked with converting markdown research reports "

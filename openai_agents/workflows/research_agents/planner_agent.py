@@ -3,9 +3,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path='../../.env',override=True)
 
-set_default_openai_key(os.getenv('OPENAI_API_KEY'))
+# Load environment variables
+load_dotenv()
+
 
 PROMPT = (
     "You are a helpful research assistant. Given a query, come up with a set of web searches "
