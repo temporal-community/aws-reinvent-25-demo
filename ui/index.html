@@ -6,34 +6,6 @@
     <title>Build Durable Agents</title>
     <link rel="stylesheet" href="static/styles.css">
     <style>
-        @font-face {
-            font-family: 'Aeonik';
-            src: url('static/Aeonik-Light.otf') format('opentype');
-            font-weight: 300;
-            font-style: normal;
-        }
-        
-        @font-face {
-            font-family: 'Aeonik';
-            src: url('static/Aeonik-Regular.otf') format('opentype');
-            font-weight: 400;
-            font-style: normal;
-        }
-        
-        @font-face {
-            font-family: 'Aeonik';
-            src: url('static/Aeonik-Medium.otf') format('opentype');
-            font-weight: 500;
-            font-style: normal;
-        }
-        
-        @font-face {
-            font-family: 'Aeonik';
-            src: url('static/Aeonik-Bold.otf') format('opentype');
-            font-weight: 700;
-            font-style: normal;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -102,6 +74,9 @@
             flex-direction: column;
             gap: 24px;
             margin-top: 2rem;
+            max-height: calc(100vh - 450px);
+            overflow-y: auto;
+            padding-bottom: 1rem;
         }
 
         .message {
