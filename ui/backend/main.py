@@ -22,7 +22,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-
 from temporalio.client import Client
 from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.envconfig import ClientConfig
@@ -35,7 +34,6 @@ from openai_agents.workflows.research_agents.research_models import (
     SingleClarificationInput,
     UserQueryInput,
 )
-
 
 # Load environment variables
 load_dotenv()
@@ -69,8 +67,8 @@ app.add_middleware(
 temporal_client: Optional[Client] = None
 
 temporal_config = ClientConfig.load_client_connect_config()
-temporal_config.setdefault('target_host', 'localhost:7233')
-temporal_config.setdefault('namespace', 'default')
+temporal_config.setdefault("target_host", "localhost:7233")
+temporal_config.setdefault("namespace", "default")
 
 
 async def get_temporal_client() -> Client:
@@ -78,7 +76,9 @@ async def get_temporal_client() -> Client:
     if temporal_client:
         return temporal_client
 
-    print(f"Connecting to Temporal at {temporal_config.get('target_host')} in namespace {temporal_config.get('namespace')}")
+    print(
+        f"Connecting to Temporal at {temporal_config.get('target_host')} in namespace {temporal_config.get('namespace')}"
+    )
 
     temporal_client = await Client.connect(
         **temporal_config,
@@ -265,7 +265,7 @@ async def get_result(workflow_id: str):
 
     # Check if workflow is complete
     desc = await handle.describe()
-    if desc.status.name != "COMPLETED":
+    if not desc.status or desc.status.name != "COMPLETED":
         raise HTTPException(status_code=400, detail="Research not complete yet")
 
     result: InteractiveResearchResult = await handle.result()

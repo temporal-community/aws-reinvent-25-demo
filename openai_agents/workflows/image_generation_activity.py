@@ -1,19 +1,22 @@
 import base64
 from dataclasses import dataclass
 from io import BytesIO
-from typing import Optional
+from typing import Literal, Optional
 
 from openai import OpenAI
 from PIL import Image
 from pydantic import BaseModel
 from temporalio import activity
 
+ImageSize = Literal["1024x1024", "1536x1024", "1024x1536", "auto"]
+ImageOutputFormat = Literal["png", "jpeg", "webp"]
+
 
 class ImageStylingOptions(BaseModel):
     """Styling options for image generation"""
 
-    size: str = "1024x1024"  # 1024x1024, 1536x1024, 1024x1536, auto
-    output_format: str = "png"  # png, jpeg, webp
+    size: ImageSize = "1024x1024"
+    output_format: ImageOutputFormat = "png"
     output_compression: Optional[int] = None  # 0-100 for JPEG/WEBP
     resize_width: Optional[int] = 600  # Resize for optimal PDF embedding
 
@@ -54,23 +57,24 @@ async def generate_image(
         result = client.images.generate(
             model="gpt-image-1",
             prompt=prompt,
-            quality="low", # hardcoded low quality for speed/efficiency
+            quality="low",  # hardcoded low quality for speed/efficiency
             size=styling_options.size,
             output_format=styling_options.output_format,
-            **(
-                {"output_compression": styling_options.output_compression}
-                if styling_options.output_compression
-                else {}
-            ),
+            output_compression=styling_options.output_compression,
         )
+
+        if not result.data:
+            raise Exception("No image data returned from OpenAI API")
 
         # Extract base64 image data
         image_base64 = result.data[0].b64_json
+        if image_base64 is None:
+            raise Exception("No base64 image data returned from OpenAI API")
         image_bytes = base64.b64decode(image_base64)
 
         # Resize image for optimal PDF embedding
         if styling_options.resize_width:
-            image = Image.open(BytesIO(image_bytes))
+            image: Image.Image = Image.open(BytesIO(image_bytes))
 
             # Calculate proportional height
             aspect_ratio = image.height / image.width
@@ -78,7 +82,7 @@ async def generate_image(
 
             # Resize with high-quality resampling
             image = image.resize(
-                (styling_options.resize_width, new_height), Image.LANCZOS
+                (styling_options.resize_width, new_height), Image.Resampling.LANCZOS
             )
 
             # Save to bytes

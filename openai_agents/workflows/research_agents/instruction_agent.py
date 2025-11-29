@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from temporalio import workflow
 from dotenv import load_dotenv
-
+from temporalio import workflow
 
 # Load environment variables
 load_dotenv()

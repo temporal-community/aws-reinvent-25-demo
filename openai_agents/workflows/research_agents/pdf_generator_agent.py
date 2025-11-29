@@ -1,13 +1,12 @@
 # Agent used to generate PDF reports from markdown content.
 from datetime import timedelta
 
-from agents import set_default_openai_key, Agent
+from agents import Agent, set_default_openai_key
+from dotenv import load_dotenv
 from pydantic import BaseModel
 from temporalio.contrib import openai_agents as temporal_agents
 
 from openai_agents.workflows.pdf_generation_activity import generate_pdf
-from dotenv import load_dotenv
-
 
 # Load environment variables
 load_dotenv()

@@ -45,6 +45,10 @@ skip_gitignore = true
 [tool.mypy]
 ignore_missing_imports = true
 namespace_packages = true
+exclude = ["^legacy/"]
+
+[tool.pyright]
+exclude = ["legacy", "**/node_modules", "**/__pycache__", "**/.*"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["openai_agents"]

@@ -3,10 +3,10 @@ import asyncio
 from pathlib import Path
 from typing import Dict, List
 
-from temporalio.client import Client
-from temporalio.envconfig import ClientConfig
-from temporalio.contrib.pydantic import pydantic_data_converter
 from dotenv import load_dotenv
+from temporalio.client import Client
+from temporalio.contrib.pydantic import pydantic_data_converter
+from temporalio.envconfig import ClientConfig
 
 from openai_agents.workflows.interactive_research_workflow import (
     InteractiveResearchWorkflow,
@@ -16,7 +16,6 @@ from openai_agents.workflows.research_agents.research_models import (
     SingleClarificationInput,
     UserQueryInput,
 )
-
 
 # Load environment variables
 load_dotenv()
@@ -300,10 +299,12 @@ async def main():
     args = parser.parse_args()
 
     config = ClientConfig.load_client_connect_config()
-    config.setdefault('target_host', 'localhost:7233')
-    config.setdefault('namespace', 'default')
+    config.setdefault("target_host", "localhost:7233")
+    config.setdefault("namespace", "default")
 
-    print(f"Connecting to Temporal at {config['target_host']} in namespace {config['namespace']}")
+    print(
+        f"Connecting to Temporal at {config['target_host']} in namespace {config['namespace']}"
+    )
 
     # Create client
     try:

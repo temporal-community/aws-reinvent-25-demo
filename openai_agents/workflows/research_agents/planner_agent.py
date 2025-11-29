@@ -1,8 +1,8 @@
-from agents import set_default_openai_key, Agent
-from pydantic import BaseModel
-from dotenv import load_dotenv
 import os
 
+from agents import Agent, set_default_openai_key
+from dotenv import load_dotenv
+from pydantic import BaseModel
 
 # Load environment variables
 load_dotenv()

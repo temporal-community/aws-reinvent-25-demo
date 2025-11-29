@@ -20,6 +20,7 @@ from openai_agents.workflows.research_agents.research_models import (
 @dataclass
 class ProcessClarificationInput:
     """Input for clarification processing activity"""
+
     answer: str
     current_question_index: int
     current_question: str | None
@@ -29,19 +30,22 @@ class ProcessClarificationInput:
 @dataclass
 class ProcessClarificationResult:
     """Result from clarification processing activity"""
+
     question_key: str
     answer: str
     new_index: int
 
 
 @activity.defn
-async def process_clarification(input: ProcessClarificationInput) -> ProcessClarificationResult:
+async def process_clarification(
+    input: ProcessClarificationInput,
+) -> ProcessClarificationResult:
     """Process a single clarification answer"""
     activity.logger.info(
         f"Processing clarification answer {input.current_question_index + 1}/{input.total_questions}: "
         f"'{input.answer}' for question: '{input.current_question}'"
     )
-    
+
     # Simulate cloud provider outages for the last question
     is_last_question = (input.current_question_index + 1) == input.total_questions
     if is_last_question:
@@ -49,7 +53,7 @@ async def process_clarification(input: ProcessClarificationInput) -> ProcessClar
         if attempt <= 3:
             await asyncio.sleep(3)
             raise ApplicationError(f"Network outage 😭")
-    
+
     question_key = f"question_{input.current_question_index}"
     return ProcessClarificationResult(
         question_key=question_key,
@@ -255,7 +259,7 @@ class InteractiveResearchWorkflow:
     ) -> ResearchInteractionDict:
         """Provide a single clarification response"""
         current_question = self._get_current_question()
-        
+
         # Process clarification in activity
         result = await workflow.execute_activity(
             process_clarification,
@@ -267,7 +271,7 @@ class InteractiveResearchWorkflow:
             ),
             start_to_close_timeout=timedelta(seconds=30),
         )
-        
+
         # Apply result to workflow state
         self.clarification_responses[result.question_key] = result.answer
         self.current_question_index = result.new_index
@@ -279,8 +283,10 @@ class InteractiveResearchWorkflow:
         self, input: ClarificationInput
     ) -> ResearchInteractionDict:
         """Provide all clarification responses at once (legacy compatibility)"""
-        workflow.logger.info(f"Received {len(input.responses)} clarification responses: {input.responses}")
-        
+        workflow.logger.info(
+            f"Received {len(input.responses)} clarification responses: {input.responses}"
+        )
+
         self.clarification_responses = input.responses
         # Mark all questions as answered
         self.current_question_index = len(self.clarification_questions)

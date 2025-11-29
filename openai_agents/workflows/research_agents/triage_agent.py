@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from temporalio import workflow
-from dotenv import load_dotenv
 import os
 
+from dotenv import load_dotenv
+from temporalio import workflow
 
 # Load environment variables
 load_dotenv()
@@ -63,7 +63,11 @@ Return exactly ONE function-call.
 """
 
 
-TRIAGE_AGENT_PROMPT = TRIAGE_AGENT_PROMPT_BYPASS if os.getenv('BYPASS_TRIAGE_AGENT') == 'Y' else TRIAGE_AGENT_PROMPT_NORMAL
+TRIAGE_AGENT_PROMPT = (
+    TRIAGE_AGENT_PROMPT_BYPASS
+    if os.getenv("BYPASS_TRIAGE_AGENT") == "Y"
+    else TRIAGE_AGENT_PROMPT_NORMAL
+)
 
 
 def new_triage_agent() -> Agent:
