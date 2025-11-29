@@ -147,14 +147,6 @@ async def serve_success():
 
 
 # Serve static assets (JS, CSS, fonts, images)
-#static_path = Path(__file__).parent.parent
-#if static_path.exists():
-#    app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
-#images_path = Path(__file__).parent.parent.parent / "temp_images"
-#if images_path.exists():
-#    app.mount("/temp_images", StaticFiles(directory=str(images_path)), name="images")
-
-# Serve static assets (JS, CSS, fonts, images)
 static_path = Path(__file__).parent.parent
 if static_path.exists():
     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
