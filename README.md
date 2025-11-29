@@ -80,12 +80,6 @@ at the root of the repository. See the .env-sample file for details.
 
    Note: If uv is not installed, please install uv by following the instructions [here](https://docs.astral.sh/uv/getting-started/installation/)
 
-   On MacOS you can install uv via Homebrew (as shown below)
-
-   ```bash
-   brew install uv
-   ```
-
 3. Set your [OpenAI API](https://platform.openai.com/api-keys) key:
    ```bash
    # Add OpenAI API key in .env file (copy .env-sample to .env and update the OPENAI_API_KEY)
