@@ -51,20 +51,30 @@ This example is designed to be similar to the OpenAI Cookbook: [Introduction to 
 # Install Temporal CLI
 curl -sSf https://temporal.download/cli.sh | sh
 
+# Alternately, upgrade to the latest version:
+brew upgrade temporal
+
 # Start Temporal server
 temporal server start-dev
 ```
 
 ### Connect to Temporal Cloud
 
-To connect to a Temporal Cloud namespace, you may either:
+1. Uncomment the following line in your `.env` file:
 
-- Define an Environment Configuration Profile, and set the `TEMPORAL_PROFILE`
-  environment variable to the name of the profile to use for this application.
-  See https://docs.temporal.io/develop/environment-configuration for details.
+```
+# TEMPORAL_PROFILE=cloud
+```
 
-- Specify connection details through the `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`
-  and `TEMPORAL_API_KEY` environment variables.
+## 2. Run the following commands:
+
+```
+temporal config set --profile cloud --prop address --value "CLOUD_REMOTE_ADDRESS"
+temporal config set --profile cloud --prop namespace  --value "CLOUD_NAMESPACE"
+temporal config set --profile cloud --prop api_key --value "CLOUD_API_KEY"
+```
+
+See https://docs.temporal.io/develop/environment-configuration for more details.
 
 For ease of use, all environemnt variables may be defined through the `.env` file,
 at the root of the repository. See the .env-sample file for details.
