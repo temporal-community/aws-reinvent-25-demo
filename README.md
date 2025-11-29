@@ -120,8 +120,8 @@ Close and re-open Chrome for it to take effect.
 
 Open a new browser window with two tabs:
 
-Tab 1: Application UI — http://0.0.0.0:8234
-Tab 2: Temporal UI — http://localhost:8233/ (OSS) or https://cloud.temporal.io/namespaces/XXX/workflows (Temporal Cloud)
+* Tab 1: Application UI — http://0.0.0.0:8234
+* Tab 2: Temporal UI — http://localhost:8233/ (OSS) or https://cloud.temporal.io/namespaces/XXX/workflows (Temporal Cloud)
 
 Right-click Tab 1, choose Add Tab to New Split View, and click the Workflows tab as the right-hand side.
 
