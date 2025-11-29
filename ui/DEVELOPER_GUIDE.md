@@ -1,51 +1,5 @@
 # Temporal Research UI - Developer Integration Guide
 
-## Overview
-
-This UI connects to the Temporal Interactive Research Workflow. The frontend is complete and ready - developers need to uncomment and configure the Temporal integration in `backend/main.py`.
-
-## Quick Start
-
-### 1. Install Dependencies
-
-```bash
-cd backend
-pip install -r requirements.txt
-```
-
-### 2. Configure Environment
-
-**Run locally**
-No need to change your environment!
-
-**Connect to cloud**
-The easiest way is to use an [Environment Configuration Profile](https://docs.temporal.io/develop/environment-configuration).
-
-1. If you haven't done so already, create a new environment configuration profile for your favorite cloud namespace,
-   using the latest Temporal CLI:
-
-```bash
-temporal config set  --env "my-cloud-namespace"  --prop address  --value "us-west-2.aws.api.temporal.io:7233"
-temporal config set  --env "my-cloud-namespace"  --prop namespace  --value "my-cloud-namespace.a1234"
-temporal config set  --env "my-cloud-namespace"  --prop api_key  --value "...my-api-key..."
-````
-
-2. Copy the `.env-sample` file located at the root of this repository to `.env`.
-
-3. In the `.env` file, uncomment the `TEMPORAL_PROFILE` environment variable, and set it to the name of your cloud namespace.
-
-```bash
-TEMPORAL_PROFILE='my-cloud-namespace'
-```
-
-### 4. Run the Server
-
-```bash
-uv run backend/main.py
-```
-
-Server runs at: `http://localhost:8233`
-
 ## API Contract
 
 The frontend expects these exact response shapes:
@@ -53,6 +7,7 @@ The frontend expects these exact response shapes:
 ### POST /api/start-research
 
 **Request:**
+
 ```json
 {
   "query": "User's research question"
@@ -60,6 +15,7 @@ The frontend expects these exact response shapes:
 ```
 
 **Response:**
+
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -70,6 +26,7 @@ The frontend expects these exact response shapes:
 ### GET /api/status/{workflow_id}
 
 **Response (awaiting clarifications):**
+
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -81,6 +38,7 @@ The frontend expects these exact response shapes:
 ```
 
 **Response (researching):**
+
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -89,6 +47,7 @@ The frontend expects these exact response shapes:
 ```
 
 **Response (complete):**
+
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -99,6 +58,7 @@ The frontend expects these exact response shapes:
 ### POST /api/answer/{workflow_id}
 
 **Request:**
+
 ```json
 {
   "answer": "User's answer to clarification"
@@ -106,6 +66,7 @@ The frontend expects these exact response shapes:
 ```
 
 **Response:**
+
 ```json
 {
   "status": "accepted",
@@ -117,6 +78,7 @@ The frontend expects these exact response shapes:
 ### GET /api/result/{workflow_id}
 
 **Response:**
+
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -133,26 +95,26 @@ The frontend expects these exact response shapes:
 
 The frontend handles these status values:
 
-| Status | Frontend Behavior |
-|--------|-------------------|
-| `awaiting_clarifications` | Shows `current_question` as bot message |
-| `researching` | Shows spinner with "Researching..." |
-| `complete` | Fetches result, redirects to success.html |
+| Status                    | Frontend Behavior                         |
+| ------------------------- | ----------------------------------------- |
+| `awaiting_clarifications` | Shows `current_question` as bot message   |
+| `researching`             | Shows spinner with "Researching..."       |
+| `complete`                | Fetches result, redirects to success.html |
 
 ## Frontend Files
 
-| File | Purpose |
-|------|---------|
-| `index.html` | Chat interface (entry point) |
-| `success.html` | Results display with accordion |
-| `api-client.js` | JavaScript API wrapper |
+| File            | Purpose                        |
+| --------------- | ------------------------------ |
+| `index.html`    | Chat interface (entry point)   |
+| `success.html`  | Results display with accordion |
+| `api-client.js` | JavaScript API wrapper         |
 
 ## Frontend Configuration
 
 To change the API URL, edit `index.html` line 264:
 
 ```javascript
-const API_BASE_URL = 'http://localhost:8233';
+const API_BASE_URL = "http://localhost:8233";
 ```
 
 ## Integration Checklist
@@ -176,10 +138,9 @@ For UI testing without Temporal, you can:
 ## File Structure
 
 ```
-demo-output/
+ui/
 ├── backend/
 │   ├── main.py              # FastAPI server (configure here)
-│   └── requirements.txt     # Python dependencies
 ├── index.html               # Chat UI
 ├── success.html             # Results page
 ├── api-client.js            # JS API client
@@ -191,23 +152,28 @@ demo-output/
 ## Troubleshooting
 
 ### CORS Errors
+
 CORS is configured to allow all origins. For production, update:
+
 ```python
 allow_origins=["https://your-domain.com"]
 ```
 
 ### Connection Refused
+
 - Check Temporal server is running
 - Verify address in temporal.toml for your profile
 - Check port 7233 is accessible
 
 ### Workflow Not Found
+
 - Verify workflow_id is being passed correctly
 - Check worker is running and registered
 
 ## Support
 
 For issues with:
+
 - **UI/Frontend**: Check browser console for errors
 - **API/Backend**: Check FastAPI logs
 - **Temporal**: Check worker logs and Temporal UI (localhost:8233)
