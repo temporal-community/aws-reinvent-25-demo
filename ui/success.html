@@ -104,15 +104,31 @@
         }
 
         .success-heading {
-            align-self: stretch;
+            display: flex;
+            width: 27.25rem;
+            justify-content: center;
+            align-items: center;
+            gap: 0.875rem;
+            margin-top: 1.5rem;
+        }
+
+        .party-popper {
+            color: #00BC7D;
+            text-align: center;
+            font-size: 1.5rem;
+            font-style: normal;
+            font-weight: 300;
+            line-height: 2rem;
+        }
+
+        .success-heading-text {
             color: #FFF;
             text-align: center;
             font-family: 'Aeonik', sans-serif;
             font-size: 1.5rem;
             font-style: normal;
-            font-weight: 400;
+            font-weight: 300;
             line-height: 2rem;
-            margin-top: 1.5rem;
         }
 
         .buttons-container {
@@ -268,18 +284,11 @@
         <h1 class="main-heading">Build Durable Agents</h1>
         <p class="subtitle">Powered by Temporal</p>
 
-        <!-- Checkmark -->
-        <div class="checkmark-container">
-            <div class="checkmark-circle">
-                <svg class="checkmark-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#00BC7D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 12L11 14L15 10" stroke="#00BC7D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-        </div>
-
         <!-- Success Heading -->
-        <h2 class="success-heading">Research Complete</h2>
+        <div class="success-heading">
+            <span class="party-popper">🎉</span>
+            <span class="success-heading-text">Research Complete</span>
+        </div>
 
         <div class="placeholder-image">
             <img class="report-image" alt="AI-Generated Research Visualization" src=""/>
