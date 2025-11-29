@@ -3,14 +3,16 @@ FastAPI Backend for Temporal Research UI
 =========================================
 Production-ready backend connecting to Temporal workflows.
 
-Environment Variables:
-- TEMPORAL_PROFILE: name of the env config profile to use (optional).
-- TEMPORAL_ADDRESS: Temporal server address (default: 127.0.0.1:7233)
+Environment Variables Required:
+- TEMPORAL_ENDPOINT: Temporal server address (default: localhost:7233)
 - TEMPORAL_NAMESPACE: Temporal namespace (default: default)
-- TEMPORAL_API_KEY: API key for Temporal Cloud (disabled by default)
 - TEMPORAL_TASK_QUEUE: Task queue name (default: research-queue)
+- TEMPORAL_API_KEY: API key for Temporal Cloud (optional)
+- CONNECT_CLOUD: Set to 'Y' for Temporal Cloud connection
 """
 
+import asyncio
+import json
 import os
 import uuid
 from pathlib import Path
@@ -22,24 +24,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from temporalio.client import Client
-from temporalio.contrib.pydantic import pydantic_data_converter
-from temporalio.envconfig import ClientConfig
-
-from openai_agents.workflows.interactive_research_workflow import (
-    InteractiveResearchResult,
-    InteractiveResearchWorkflow,
-)
-from openai_agents.workflows.research_agents.research_models import (
-    SingleClarificationInput,
-    UserQueryInput,
-)
 
 # Load environment variables
 load_dotenv()
 
+# ============================================
+# Configuration
+# ============================================
+load_dotenv(dotenv_path=".env", override=True)
+TEMPORAL_ENDPOINT = os.getenv("TEMPORAL_ENDPOINT")
+TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE", "default")
 TEMPORAL_TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "research-queue")
-
+TEMPORAL_API_KEY = os.getenv("TEMPORAL_API_KEY")
+CONNECT_CLOUD = os.getenv("CONNECT_CLOUD", "N")
 
 # ============================================
 # FastAPI App Setup
@@ -62,13 +59,21 @@ app.add_middleware(
 # ============================================
 # Temporal Client Setup
 # ============================================
+# TODO: Uncomment and configure when ready to connect to Temporal
+#
+from temporalio.client import Client
+from temporalio.contrib.pydantic import pydantic_data_converter
 
+from openai_agents.workflows.interactive_research_workflow import (
+    InteractiveResearchResult,
+    InteractiveResearchWorkflow,
+)
+from openai_agents.workflows.research_agents.research_models import (
+    SingleClarificationInput,
+    UserQueryInput,
+)
 
 temporal_client: Optional[Client] = None
-
-temporal_config = ClientConfig.load_client_connect_config()
-temporal_config.setdefault("target_host", "localhost:7233")
-temporal_config.setdefault("namespace", "default")
 
 
 async def get_temporal_client() -> Client:
@@ -76,14 +81,19 @@ async def get_temporal_client() -> Client:
     if temporal_client:
         return temporal_client
 
-    print(
-        f"Connecting to Temporal at {temporal_config.get('target_host')} in namespace {temporal_config.get('namespace')}"
-    )
-
-    temporal_client = await Client.connect(
-        **temporal_config,
-        data_converter=pydantic_data_converter,
-    )
+    if CONNECT_CLOUD == "Y":
+        temporal_client = await Client.connect(
+            TEMPORAL_ENDPOINT,
+            namespace=TEMPORAL_NAMESPACE,
+            api_key=TEMPORAL_API_KEY,
+            tls=True,
+            data_converter=pydantic_data_converter,
+        )
+    else:
+        temporal_client = await Client.connect(
+            "localhost:7233",
+            data_converter=pydantic_data_converter,
+        )
     return temporal_client
 
 
@@ -136,14 +146,28 @@ async def serve_success():
     raise HTTPException(status_code=404, detail="Success page not found")
 
 
-# Serve static assets (JS, CSS, fonts, images)
-static_path = Path(__file__).parent.parent
-if static_path.exists():
-    app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+# Serve static assets
+ui_path = Path(__file__).parent.parent
 
+# CSS files
+css_path = ui_path / "css"
+if css_path.exists():
+    app.mount("/css", StaticFiles(directory=str(css_path)), name="css")
+
+# JavaScript files
+js_path = ui_path / "js"
+if js_path.exists():
+    app.mount("/js", StaticFiles(directory=str(js_path)), name="js")
+
+# Assets (fonts, icons, images)
+assets_path = ui_path / "assets"
+if assets_path.exists():
+    app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
+
+# Temp images for generated content
 images_path = Path(__file__).resolve().parent.parent.parent / "temp_images"
 images_path.mkdir(exist_ok=True)
-app.mount("/temp_images", StaticFiles(directory=str(images_path)), name="images")
+app.mount("/temp_images", StaticFiles(directory=str(images_path)), name="temp_images")
 
 # ============================================
 # API Endpoints
@@ -265,7 +289,7 @@ async def get_result(workflow_id: str):
 
     # Check if workflow is complete
     desc = await handle.describe()
-    if not desc.status or desc.status.name != "COMPLETED":
+    if desc.status.name != "COMPLETED":
         raise HTTPException(status_code=400, detail="Research not complete yet")
 
     result: InteractiveResearchResult = await handle.result()
@@ -329,10 +353,10 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        # "temporal_profile": TEMPORAL_PROFILE,
-        "temporal_address": temporal_config.get("target_host"),
-        "temporal_namespace": temporal_config.get("namespace"),
+        "temporal_endpoint": TEMPORAL_ENDPOINT,
+        "temporal_namespace": TEMPORAL_NAMESPACE,
         "task_queue": TEMPORAL_TASK_QUEUE,
+        "cloud_connection": CONNECT_CLOUD == "Y",
     }
 
 

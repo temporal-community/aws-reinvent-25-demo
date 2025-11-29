@@ -1,5 +1,51 @@
 # Temporal Research UI - Developer Integration Guide
 
+## Overview
+
+This UI connects to the Temporal Interactive Research Workflow. The frontend is complete and ready - developers need to uncomment and configure the Temporal integration in `backend/main.py`.
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment
+
+Create a `.env` file in the backend directory:
+
+```bash
+# For local Temporal server
+TEMPORAL_ENDPOINT=localhost:7233
+TEMPORAL_NAMESPACE=default
+TEMPORAL_TASK_QUEUE=research-queue
+
+# For Temporal Cloud
+# CONNECT_CLOUD=Y
+# TEMPORAL_ENDPOINT=your-namespace.tmprl.cloud:7233
+# TEMPORAL_API_KEY=your-api-key
+```
+
+### 3. Enable Temporal Integration
+
+Open `backend/main.py` and:
+
+1. **Uncomment the imports** (lines 55-65)
+2. **Uncomment `get_temporal_client()`** (lines 67-82)
+3. **Uncomment the implementation** in each endpoint (the TODO blocks)
+4. **Remove the `raise HTTPException`** lines
+
+### 4. Run the Server
+
+```bash
+python main.py
+```
+
+Server runs at: `http://localhost:8233`
+
 ## API Contract
 
 The frontend expects these exact response shapes:
@@ -7,7 +53,6 @@ The frontend expects these exact response shapes:
 ### POST /api/start-research
 
 **Request:**
-
 ```json
 {
   "query": "User's research question"
@@ -15,7 +60,6 @@ The frontend expects these exact response shapes:
 ```
 
 **Response:**
-
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -26,7 +70,6 @@ The frontend expects these exact response shapes:
 ### GET /api/status/{workflow_id}
 
 **Response (awaiting clarifications):**
-
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -38,7 +81,6 @@ The frontend expects these exact response shapes:
 ```
 
 **Response (researching):**
-
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -47,7 +89,6 @@ The frontend expects these exact response shapes:
 ```
 
 **Response (complete):**
-
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -58,7 +99,6 @@ The frontend expects these exact response shapes:
 ### POST /api/answer/{workflow_id}
 
 **Request:**
-
 ```json
 {
   "answer": "User's answer to clarification"
@@ -66,7 +106,6 @@ The frontend expects these exact response shapes:
 ```
 
 **Response:**
-
 ```json
 {
   "status": "accepted",
@@ -78,7 +117,6 @@ The frontend expects these exact response shapes:
 ### GET /api/result/{workflow_id}
 
 **Response:**
-
 ```json
 {
   "workflow_id": "interactive-research-abc123",
@@ -95,35 +133,37 @@ The frontend expects these exact response shapes:
 
 The frontend handles these status values:
 
-| Status                    | Frontend Behavior                         |
-| ------------------------- | ----------------------------------------- |
-| `awaiting_clarifications` | Shows `current_question` as bot message   |
-| `researching`             | Shows spinner with "Researching..."       |
-| `complete`                | Fetches result, redirects to success.html |
+| Status | Frontend Behavior |
+|--------|-------------------|
+| `awaiting_clarifications` | Shows `current_question` as bot message |
+| `researching` | Shows spinner with "Researching..." |
+| `complete` | Fetches result, redirects to success.html |
 
 ## Frontend Files
 
-| File            | Purpose                        |
-| --------------- | ------------------------------ |
-| `index.html`    | Chat interface (entry point)   |
-| `success.html`  | Results display with accordion |
-| `api-client.js` | JavaScript API wrapper         |
+| File | Purpose |
+|------|---------|
+| `index.html` | Chat interface (entry point) |
+| `success.html` | Results display with accordion |
+| `api-client.js` | JavaScript API wrapper |
 
 ## Frontend Configuration
 
 To change the API URL, edit `index.html` line 264:
 
 ```javascript
-const API_BASE_URL = "http://localhost:8233";
+const API_BASE_URL = 'http://localhost:8233';
 ```
 
 ## Integration Checklist
 
+- [ ] Uncomment Temporal imports in main.py
+- [ ] Uncomment get_temporal_client() function
 - [ ] Implement POST /api/start-research
 - [ ] Implement GET /api/status/{workflow_id}
 - [ ] Implement POST /api/answer/{workflow_id}
 - [ ] Implement GET /api/result/{workflow_id}
-- [ ] Configure Environment Configuration Profile / .env file with Temporal connection details
+- [ ] Configure .env with Temporal connection
 - [ ] Start Temporal server or connect to Cloud
 - [ ] Start worker (uv run openai_agents/run_worker.py)
 - [ ] Test full flow
@@ -138,9 +178,10 @@ For UI testing without Temporal, you can:
 ## File Structure
 
 ```
-ui/
+demo-output/
 ├── backend/
 │   ├── main.py              # FastAPI server (configure here)
+│   └── requirements.txt     # Python dependencies
 ├── index.html               # Chat UI
 ├── success.html             # Results page
 ├── api-client.js            # JS API client
@@ -152,28 +193,23 @@ ui/
 ## Troubleshooting
 
 ### CORS Errors
-
 CORS is configured to allow all origins. For production, update:
-
 ```python
 allow_origins=["https://your-domain.com"]
 ```
 
 ### Connection Refused
-
 - Check Temporal server is running
-- Verify address in temporal.toml for your profile
+- Verify TEMPORAL_ENDPOINT in .env
 - Check port 7233 is accessible
 
 ### Workflow Not Found
-
 - Verify workflow_id is being passed correctly
 - Check worker is running and registered
 
 ## Support
 
 For issues with:
-
 - **UI/Frontend**: Check browser console for errors
 - **API/Backend**: Check FastAPI logs
 - **Temporal**: Check worker logs and Temporal UI (localhost:8233)
