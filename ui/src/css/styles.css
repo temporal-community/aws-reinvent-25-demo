@@ -1,3 +1,6 @@
+/* ============================================
+   Font Faces
+   ============================================ */
 @font-face {
     font-family: 'Aeonik';
     src: url('../../public/fonts/Aeonik-Light.otf') format('opentype');
@@ -26,9 +29,60 @@
     font-style: normal;
 }
 
+/* ============================================
+   Global Styles
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#gradient-canvas {
+    width: 100%;
+    height: 100%;
+    --gradient-color-1: #FDA110;
+    --gradient-color-2: #444CE7;
+    --gradient-color-3: #211B4E;
+    --gradient-color-4: #D300DB;
+}
+
+.full-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+.content-section {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 485px;
+    height: 100vh;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+
+/* Success page specific - allow scrolling */
+body.success-page .content-section {
+    overflow-y: auto;
+}
+
 .temporal-logo {
     display: block;
-    margin: 80px auto 0;
+    margin: 40px auto 0;
     width: 48px;
     height: 48px;
 }
@@ -42,4 +96,400 @@
     font-weight: 300;
     line-height: 2.25rem;
     margin-top: 1.5rem;
+}
+
+.subtitle {
+    color: #F8FAFC;
+    text-align: center;
+    font-family: 'Aeonik', sans-serif;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.25rem;
+    margin-top: 0.34rem;
+}
+
+/* Hide NeatGradient watermark */
+a[href="https://neat.firecms.co"] {
+    display: none !important;
+}
+
+/* ============================================
+   Chat Page Styles (index.html)
+   ============================================ */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 2rem;
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
+}
+
+.message {
+    display: flex;
+    animation: slideIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.bot {
+    justify-content: flex-start;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.message-bubble {
+    display: flex;
+    padding: 0.6875rem 1rem;
+    justify-content: center;
+    align-items: center;
+    gap: 0.625rem;
+    font-family: 'Aeonik', sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    max-width: 346px;
+}
+
+.message-bubble.bot {
+    border-radius: 0 1rem 1rem 1rem;
+    border: 1px solid #E4E4E7;
+    background: #FFF;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.10), 0 1px 2px -1px rgba(0, 0, 0, 0.10);
+    color: #000;
+}
+
+.message-bubble.user {
+    display: flex;
+    padding: 0.625rem 1rem;
+    justify-content: center;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: 1rem 0 1rem 1rem;
+    background: #444CE7;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.10), 0 1px 2px -1px rgba(0, 0, 0, 0.10);
+    color: #FFF;
+}
+
+.spinner-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.spinner {
+    width: 1.6485rem;
+    height: 1.6485rem;
+    transform: rotate(156.169deg);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(156.169deg);
+    }
+    to {
+        transform: rotate(516.169deg);
+    }
+}
+
+.researching-text {
+    font-family: 'Aeonik', sans-serif;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.25rem;
+    background: linear-gradient(90deg, #E4E4E7 0%, #FFF 50%, #E4E4E7 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.input-container {
+    position: absolute;
+    bottom: 20px;
+    left: 24px;
+    right: 24px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.user-input {
+    display: flex;
+    height: 3rem;
+    padding: 0.25rem 3rem 0.25rem 1.5rem;
+    align-items: center;
+    flex: 1 0 0;
+    width: 100%;
+    border-radius: 62499.9375rem;
+    border: 1px solid #444CE7;
+    background: rgba(255, 255, 255, 0.90);
+    box-shadow: 0 0 0 0.094px rgba(63, 63, 70, 0.03);
+    font-family: 'Aeonik', sans-serif;
+    font-size: 1rem;
+    outline: none;
+}
+
+.user-input::placeholder {
+    color: #465A78;
+    font-family: 'Aeonik', sans-serif;
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.submit-button {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    right: 0.25rem;
+    top: 0.25rem;
+    border-radius: 1048575rem;
+    background: #444CE7;
+    border: none;
+    cursor: pointer;
+}
+
+.submit-button svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   Success Page Styles (success.html)
+   ============================================ */
+.checkmark-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2.91rem;
+}
+
+.checkmark-circle {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: 1048575rem;
+    border: 1px solid #00BC7D;
+    background: rgba(0, 0, 0, 0.30);
+}
+
+.checkmark-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+}
+
+.success-heading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 0.875rem;
+    margin-top: 1.5rem;
+}
+
+.party-popper {
+    color: #00BC7D;
+    text-align: center;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 2rem;
+}
+
+.success-heading-text {
+    color: #FFF;
+    text-align: center;
+    font-family: 'Aeonik', sans-serif;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 2rem;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.download-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 24px;
+    gap: 1.25rem;
+}
+
+.btn-start-over {
+    display: flex;
+    padding: 1rem;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.875rem;
+    background: rgba(0, 0, 0, 0.40);
+    color: #FFF;
+    border-radius: 0;
+    text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.5rem;
+}
+
+.btn-start-over img {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.btn {
+    display: flex;
+    padding: 0.75rem 1.5rem;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: stretch;
+    border-radius: 0.5rem;
+    font-family: 'Aeonik', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-primary {
+    display: flex;
+    height: 3.625rem;
+    flex-direction: row;
+    align-items: center;
+    align-self: stretch;
+    background: #096;
+    color: #FFF;
+    border-radius: 0;
+    padding: 1.19rem 1rem;
+    gap: 0.75rem;
+}
+
+.btn-primary svg.file-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+.btn-primary svg.file-icon path {
+    stroke: #FFF;
+    stroke-width: 1.667;
+}
+
+.btn-primary .btn-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.btn-secondary {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.40);
+    color: #FFF;
+    border-radius: 0;
+    padding: 1rem;
+    gap: 0.875rem;
+    min-width: 230px;
+}
+
+.btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+.chevron {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.chevron.open {
+    transform: rotate(180deg);
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background: #FFF;
+    margin-top: 0;
+}
+
+.accordion-content.open {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.markdown-content {
+    padding: 20px;
+    font-family: 'Aeonik', sans-serif;
+    color: #000;
+}
+
+.markdown-content h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #000;
+}
+
+.markdown-content h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #000;
+}
+
+.markdown-content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    color: #000;
+}
+
+.placeholder-image {
+    width: 100%;
+    height: auto;
+    margin: 1rem 0 1rem 0;
+}
+
+.placeholder-image img {
+    width: 100%;
 }
