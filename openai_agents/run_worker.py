@@ -35,17 +35,20 @@ async def main():
     config = profile.to_client_connect_config()
 
     # For local development, remove cloud-specific config that interferes
-    if not os.getenv('CONNECT_CLOUD') == 'Y':
+    if os.getenv('CONNECT_CLOUD') == 'Y':
+        # Cloud mode - use environment variables
+        config['target_host'] = os.getenv('TEMPORAL_ENDPOINT')
+        config['namespace'] = os.getenv('TEMPORAL_NAMESPACE')
+        config['api_key'] = os.getenv('TEMPORAL_API_KEY')
+        config['tls'] = True
+    else:
+        # Local mode
         config.pop('api_key', None)
         config.pop('tls', None)
         config['target_host'] = 'localhost:7233'
         config['namespace'] = 'default'
-    else:
-        config.setdefault("target_host", "localhost:7233")
-        config.setdefault("namespace", "default")
 
-    config.setdefault("target_host", "localhost:7233")
-    config.setdefault("namespace", "default")
+    
 
     print(
         f"Connecting to Temporal at {config.get('target_host')} in namespace {config.get('namespace')}"
