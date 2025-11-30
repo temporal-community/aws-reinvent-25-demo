@@ -140,13 +140,22 @@ For UI testing without Temporal, you can:
 ```
 ui/
 ├── backend/
-│   ├── main.py              # FastAPI server (configure here)
-├── index.html               # Chat UI
+│   └── main.py              # FastAPI server (configure here)
+├── public/                  # Static assets
+│   ├── fonts/
+│   │   └── *.otf           # Aeonik fonts
+│   ├── icons/
+│   │   └── *.svg           # SVG icons
+│   └── images/
+│       └── *.png           # Images
+├── src/                     # Source code
+│   ├── js/
+│   │   └── api-client.js   # JS API client
+│   └── css/
+│       └── styles.css      # Shared styles
+├── index.html               # Chat UI (entry point)
 ├── success.html             # Results page
-├── api-client.js            # JS API client
-├── styles.css               # Shared styles
-├── *.otf                    # Aeonik fonts
-└── *.svg                    # Icons
+└── DEVELOPER_GUIDE.md       # This file
 ```
 
 ## Troubleshooting
