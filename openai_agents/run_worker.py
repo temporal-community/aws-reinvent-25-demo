@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from datetime import timedelta
 
 from dotenv import load_dotenv
@@ -9,7 +10,7 @@ from temporalio.client import Client
 from temporalio.common import RetryPolicy
 from temporalio.contrib.openai_agents import ModelActivityParameters, OpenAIAgentsPlugin
 from temporalio.contrib.pydantic import pydantic_data_converter
-from temporalio.envconfig import ClientConfig
+from temporalio.envconfig import ClientConfigProfile
 from temporalio.worker import Worker
 
 from openai_agents.workflows.image_generation_activity import generate_image
@@ -30,7 +31,19 @@ logging.getLogger("openai.agents").setLevel(logging.CRITICAL)
 async def main():
     logging.basicConfig(level=logging.INFO)
 
-    config = ClientConfig.load_client_connect_config()
+    profile = ClientConfigProfile.load()
+    config = profile.to_client_connect_config()
+
+    # For local development, remove cloud-specific config that interferes
+    if not os.getenv('CONNECT_CLOUD') == 'Y':
+        config.pop('api_key', None)
+        config.pop('tls', None)
+        config['target_host'] = 'localhost:7233'
+        config['namespace'] = 'default'
+    else:
+        config.setdefault("target_host", "localhost:7233")
+        config.setdefault("namespace", "default")
+
     config.setdefault("target_host", "localhost:7233")
     config.setdefault("namespace", "default")
 
