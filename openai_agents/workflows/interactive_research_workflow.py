@@ -52,7 +52,7 @@ async def process_clarification(
         attempt = activity.info().attempt
         if attempt <= 3:
             await asyncio.sleep(3)
-            raise ApplicationError(f"Network outage 😭")
+            raise ApplicationError(f"Simulated failure -- try again soon :)")
 
     question_key = f"question_{input.current_question_index}"
     return ProcessClarificationResult(
