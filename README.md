@@ -125,7 +125,7 @@ uv run ui/backend/main.py
 
 This will launch the Interactive Research App on http://0.0.0.0:8234
 
-![UI Interface](ui/ui_img.png "UI Interface Img")
+![UI Interface](ui/public/images/ui_img.png "UI Interface Img")
 
 ### 3. Use the Demo
 
