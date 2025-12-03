@@ -46,12 +46,14 @@ async def process_clarification(
         f"'{input.answer}' for question: '{input.current_question}'"
     )
 
-    # Simulate cloud provider outages for the last question
-    is_last_question = (input.current_question_index + 1) == input.total_questions
-    if is_last_question:
+    # Simulate cloud provider outages for the second-to-last question
+    is_second_last_question = (input.current_question_index + 2) == input.total_questions
+    if is_second_last_question:
         attempt = activity.info().attempt
-        if attempt <= 3:
-            await asyncio.sleep(3)
+        if attempt == 1:
+            raise ApplicationError(f"Simulated failure -- try again soon :)")
+        elif attempt <= 3:
+            await asyncio.sleep(10)
             raise ApplicationError(f"Simulated failure -- try again soon :)")
 
     question_key = f"question_{input.current_question_index}"
