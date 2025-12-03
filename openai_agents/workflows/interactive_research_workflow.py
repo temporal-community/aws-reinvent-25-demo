@@ -51,10 +51,10 @@ async def process_clarification(
     if is_second_last_question:
         attempt = activity.info().attempt
         if attempt == 1:
-            raise ApplicationError(f"Simulated failure -- try again soon :)")
+            raise ApplicationError("Simulated failure -- try again soon :)")
         elif attempt <= 3:
             await asyncio.sleep(10)
-            raise ApplicationError(f"Simulated failure -- try again soon :)")
+            raise ApplicationError("Simulated failure -- try again soon :)")
 
     question_key = f"question_{input.current_question_index}"
     return ProcessClarificationResult(
