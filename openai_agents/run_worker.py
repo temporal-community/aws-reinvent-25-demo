@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from datetime import timedelta
 
 from dotenv import load_dotenv
@@ -21,6 +22,8 @@ from openai_agents.workflows.pdf_generation_activity import generate_pdf
 
 # Load environment variables
 load_dotenv()
+
+TEMPORAL_TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "research-queue")
 
 # Configure logging
 logging.getLogger("openai").setLevel(logging.ERROR)
@@ -59,7 +62,7 @@ async def main():
     print("Starting worker...")
     worker = Worker(
         client,
-        task_queue="research-queue",
+        task_queue=TEMPORAL_TASK_QUEUE,
         workflows=[
             InteractiveResearchWorkflow,
         ],

@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import os
 from pathlib import Path
 from typing import Dict, List
 
@@ -19,6 +20,8 @@ from openai_agents.workflows.research_agents.research_models import (
 
 # Load environment variables
 load_dotenv()
+
+TEMPORAL_TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "research-queue")
 
 
 async def run_interactive_research_with_clarifications(
@@ -71,7 +74,7 @@ async def run_interactive_research_with_clarifications(
                     InteractiveResearchWorkflow.run,
                     args=[None, False],
                     id=unique_id,
-                    task_queue="research-queue",
+                    task_queue=TEMPORAL_TASK_QUEUE,
                 )
                 break  # Success, exit retry loop
 
