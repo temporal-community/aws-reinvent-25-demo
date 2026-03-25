@@ -101,7 +101,27 @@ at the root of the repository. See the .env-sample file for details.
    OPENAI_API_KEY=''
    ```
 
-## Running the Demos
+## Running with Docker Compose
+
+The quickest way to get started is with Docker Compose. This starts the Temporal dev server, worker, and UI in a single command.
+
+1. Copy `.env-sample` to `.env` and set your `OPENAI_API_KEY`.
+
+2. Build and start all services:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+3. Open the app at http://localhost:8234 and the Temporal UI at http://localhost:8233.
+
+To stop all services:
+
+```bash
+docker-compose down
+```
+
+## Running Locally
 
 ### 1. Start the Worker
 
